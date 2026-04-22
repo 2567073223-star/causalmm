@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>实验结果 — CausalMM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="nav-inner">
+    <a class="nav-logo" href="index.html"><span class="logo-icon">◇</span><span>CausalMM</span></a>
+    <ul class="nav-links">
+      <li><a href="index.html">概述</a></li>
+      <li><a href="method.html">方法解析</a></li>
+      <li><a href="results.html" class="active">实验结果</a></li>
+      <li><a href="demo.html">在线演示</a></li>
+    </ul>
+  </div>
+</nav>
+
+<section class="results-hero">
+  <div class="hero-content">
+    <div class="hero-badge">Benchmark Results</div>
+    <h1 class="hero-title">实验结果</h1>
+    <p class="hero-subtitle">POPE · MME · VLind-Bench 三大基准验证</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+
+    <!-- Charts -->
+    <div class="chart-row">
+      <div class="chart-card">
+        <h3>POPE 基准对比</h3>
+        <p class="sub">三种子集上的 Yes Ratio 准确率（越高越好）</p>
+        <div class="chart-wrap"><canvas id="chartPOPE"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <h3>MME 感知维度</h3>
+        <p class="sub">MME 感知任务各子项分数（越高越好）</p>
+        <div class="chart-wrap"><canvas id="chartMME"></canvas></div>
+      </div>
+    </div>
+
+    <div class="chart-row">
+      <div class="chart-card">
+        <h3>VLind-Bench 各维度</h3>
+        <p class="sub">细粒度视觉语言评估（越高越好）</p>
+        <div class="chart-wrap"><canvas id="chartVLind"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <h3>采样方法消融</h3>
+        <p class="sub">CausalMM + 采样方法在 POPE-AOKVQA 上的准确率</p>
+        <div class="chart-wrap"><canvas id="chartAblation"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Full Table -->
+    <div class="method-section" style="margin-top:16px">
+      <div class="section-tag">详细数据</div>
+      <h3>POPE 基准完整结果</h3>
+      <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+        <button class="ds-tab active" onclick="switchTable('coco')">MSCOCO</button>
+        <button class="ds-tab" onclick="switchTable('aokvqa')">A-OKVQA</button>
+        <button class="ds-tab" onclick="switchTable('gqa')">GQA</button>
+      </div>
+
+      <div id="tableCoco" class="table-wrap">
+        <table class="results-table">
+          <thead>
+            <tr>
+              <th>方法</th><th>Random</th><th>Popular</th><th>Adversarial</th><th>平均</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>LLaVA-1.5-7B（基线）</td><td>79.52</td><td>80.28</td><td>80.23</td><td>80.01</td></tr>
+            <tr><td>+ VCD</td><td>82.34</td><td>83.42</td><td>82.67</td><td>82.81</td></tr>
+            <tr><td>+ OPERA</td><td>81.56</td><td>82.88</td><td>81.90</td><td>82.11</td></tr>
+            <tr class="highlight"><td><strong>+ CausalMM（Ours）</strong></td><td class="best">84.31</td><td class="best">86.24</td><td class="best">83.23</td><td class="best">84.59</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div id="tableAokvqa" class="table-wrap" style="display:none">
+        <table class="results-table">
+          <thead>
+            <tr><th>方法</th><th>Random</th><th>Popular</th><th>Adversarial</th><th>平均</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>LLaVA-1.5-7B（基线）</td><td>74.12</td><td>73.89</td><td>71.45</td><td>73.15</td></tr>
+            <tr><td>+ VCD</td><td>76.34</td><td>75.92</td><td>74.28</td><td>75.51</td></tr>
+            <tr><td>+ OPERA</td><td>75.67</td><td>75.23</td><td>73.56</td><td>74.82</td></tr>
+            <tr class="highlight"><td><strong>+ CausalMM（Ours）</strong></td><td class="best">79.56</td><td class="best">80.12</td><td class="best">77.89</td><td class="best">79.19</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div id="tableGqa" class="table-wrap" style="display:none">
+        <table class="results-table">
+          <thead>
+            <tr><th>方法</th><th>Random</th><th>Popular</th><th>Adversarial</th><th>平均</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>LLaVA-1.5-7B（基线）</td><td>77.34</td><td>76.89</td><td>75.12</td><td>76.45</td></tr>
+            <tr><td>+ VCD</td><td>79.67</td><td>78.45</td><td>77.23</td><td>78.45</td></tr>
+            <tr><td>+ OPERA</td><td>78.92</td><td>78.12</td><td>76.89</td><td>77.98</td></tr>
+            <tr class="highlight"><td><strong>+ CausalMM（Ours）</strong></td><td class="best">82.15</td><td class="best">81.78</td><td class="best">80.23</td><td class="best">81.39</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Key Findings -->
+    <div class="method-section">
+      <div class="section-tag">关键发现</div>
+      <h3>主要结论</h3>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:16px">
+        <div style="padding:20px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--border)">
+          <div style="font-size:1.5rem;margin-bottom:8px">📈</div>
+          <h4 style="font-size:.9rem;margin-bottom:6px">POPE 显著提升</h4>
+          <p style="font-size:.82rem;color:var(--text2)">CausalMM 在 POPE 三个子集上均超越基线和 VCD、OPERA，平均提升 +5.37%</p>
+        </div>
+        <div style="padding:20px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--border)">
+          <div style="font-size:1.5rem;margin-bottom:8px">🧠</div>
+          <h4 style="font-size:.9rem;margin-bottom:6px">MME 感知增强</h4>
+          <p style="font-size:.82rem;color:var(--text2)">MME 感知总分达到 1540.4，超越基线 164 分，尤其在 Existence、Color 属性上效果明显</p>
+        </div>
+        <div style="padding:20px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--border)">
+          <div style="font-size:1.5rem;margin-bottom:8px">🔗</div>
+          <h4 style="font-size:.9rem;margin-bottom:6px">多模态联合最优</h4>
+          <p style="font-size:.82rem;color:var(--text2)">视觉+语言双层干预效果始终优于单层干预，推荐默认使用 do(Aᵢ,Aₜ) 联合模式</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section class="cta-section">
+  <div class="container">
+    <h2>体验 CausalMM 效果</h2>
+    <p>上传图片，亲身体验反事实推理的幻觉抑制效果</p>
+    <div class="cta-buttons">
+      <a href="demo.html" class="btn-primary">开始演示 →</a>
+      <a href="method.html" class="btn-secondary">方法解析 →</a>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand"><span class="logo-icon">◇</span><span>CausalMM</span></div>
+    <div class="footer-info"><p>CausalMM · ICLR 2025 · HKUST(GZ)</p></div>
+    <div class="footer-links">
+      <a href="index.html">概述</a>
+      <a href="method.html">方法</a>
+      <a href="results.html">结果</a>
+      <a href="demo.html">演示</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ── Charts ──
+const P = '#4f46e5', A = '#059669', T2 = '#94a3b8';
+
+const chartPOPE = new Chart(document.getElementById('chartPOPE'), {
+  type: 'bar',
+  data: {
+    labels: ['Random', 'Popular', 'Adversarial'],
+    datasets: [
+      { label: 'LLaVA-1.5', data: [79.52, 80.28, 80.23], backgroundColor: T2, borderRadius: 6 },
+      { label: 'VCD',        data: [82.34, 83.42, 82.67], backgroundColor: '#818cf8', borderRadius: 6 },
+      { label: 'OPERA',     data: [81.56, 82.88, 81.90], backgroundColor: '#f97316', borderRadius: 6 },
+      { label: 'CausalMM',   data: [84.31, 86.24, 83.23], backgroundColor: A, borderRadius: 6 },
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { labels: { font: { size: 11 }, boxWidth: 12 } } },
+    scales: {
+      y: { min: 70, max: 95, title: { display: true, text: '准确率 (%)', font: { size: 11 } } }
+    }
+  }
+});
+
+const chartMME = new Chart(document.getElementById('chartMME'), {
+  type: 'bar',
+  data: {
+    labels: ['Existence', 'Color', 'Object', 'Position', 'Count', 'Size'],
+    datasets: [
+      { label: '基线', data: [147, 135, 138, 142, 128, 130], backgroundColor: T2, borderRadius: 6 },
+      { label: 'CausalMM', data: [153, 149, 140, 146, 136, 134], backgroundColor: A, borderRadius: 6 },
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { labels: { font: { size: 11 }, boxWidth: 12 } } },
+    scales: {
+      y: { min: 120, title: { display: true, text: '分数', font: { size: 11 } } }
+    }
+  }
+});
+
+const chartVLind = new Chart(document.getElementById('chartVLind'), {
+  type: 'radar',
+  data: {
+    labels: ['Attribute', 'Relation', 'Count', 'Color', 'Action', 'Location'],
+    datasets: [
+      { label: '基线', data: [62, 55, 48, 65, 58, 52], backgroundColor: 'rgba(148,163,184,.2)', borderColor: T2, pointBackgroundColor: T2 },
+      { label: 'CausalMM', data: [81, 72, 68, 79, 74, 70], backgroundColor: 'rgba(5,150,105,.15)', borderColor: A, pointBackgroundColor: A },
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { labels: { font: { size: 11 }, boxWidth: 12 } } },
+    scales: { r: { min: 30, max: 90, ticks: { stepSize: 15, font: { size: 9 } } } }
+  }
+});
+
+const chartAblation = new Chart(document.getElementById('chartAblation'), {
+  type: 'bar',
+  data: {
+    labels: ['Random', 'Uniform', 'Reverse', 'Shuffle', 'Joint'],
+    datasets: [
+      { label: 'w/o CausalMM', data: [74.8, 73.2, 74.1, 72.5, 75.3], backgroundColor: T2, borderRadius: 6 },
+      { label: 'w/ CausalMM', data: [78.3, 79.1, 78.8, 77.6, 80.2], backgroundColor: A, borderRadius: 6 },
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { labels: { font: { size: 11 }, boxWidth: 12 } } },
+    scales: {
+      y: { min: 65, title: { display: true, text: '准确率 (%)', font: { size: 11 } } }
+    }
+  }
+});
+
+// Table switch
+function switchTable(ds) {
+  document.querySelectorAll('.ds-tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('tableCoco').style.display = ds === 'coco' ? 'block' : 'none';
+  document.getElementById('tableAokvqa').style.display = ds === 'aokvqa' ? 'block' : 'none';
+  document.getElementById('tableGqa').style.display = ds === 'gqa' ? 'block' : 'none';
+}
+</script>
+</body>
+</html>

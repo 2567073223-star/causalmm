@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>在线演示 — CausalMM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="nav-inner">
+    <a class="nav-logo" href="index.html"><span class="logo-icon">◇</span><span>CausalMM</span></a>
+    <ul class="nav-links">
+      <li><a href="index.html">概述</a></li>
+      <li><a href="method.html">方法解析</a></li>
+      <li><a href="results.html">实验结果</a></li>
+      <li><a href="demo.html" class="active">在线演示</a></li>
+    </ul>
+  </div>
+</nav>
+
+<section class="demo-hero">
+  <div class="hero-content">
+    <div class="hero-badge">Live Demo</div>
+    <h1 class="hero-title">体验 CausalMM</h1>
+    <p class="hero-subtitle">选择示例图片或上传图片，体验反事实推理的幻觉抑制效果</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="demo-layout">
+
+      <!-- Left: Upload & Samples -->
+      <div>
+        <h3 style="font-size:1rem;margin-bottom:12px">选择示例图片</h3>
+        <div class="sample-gallery">
+          <div class="sample-img selected" data-scene="scene1" onclick="selectSample(this)">
+            <img src="https://picsum.photos/seed/cityscape/400/400" alt="城市街景" loading="lazy">
+            <div class="sample-img-label">场景一：城市街景</div>
+          </div>
+          <div class="sample-img" data-scene="scene2" onclick="selectSample(this)">
+            <img src="https://picsum.photos/seed/nature/400/400" alt="自然风景" loading="lazy">
+            <div class="sample-img-label">场景二：自然风景</div>
+          </div>
+          <div class="sample-img" data-scene="scene3" onclick="selectSample(this)">
+            <img src="https://picsum.photos/seed/objects/400/400" alt="物体特写" loading="lazy">
+            <div class="sample-img-label">场景三：物体特写</div>
+          </div>
+          <div class="sample-img" data-scene="scene4" onclick="selectSample(this)">
+            <img src="https://picsum.photos/seed/people/400/400" alt="人物场景" loading="lazy">
+            <div class="sample-img-label">场景四：人物场景</div>
+          </div>
+        </div>
+
+        <div style="margin-top:20px">
+          <h3 style="font-size:1rem;margin-bottom:12px">或上传图片</h3>
+          <label class="upload-zone" id="uploadZone">
+            <div class="upload-icon">📁</div>
+            <h3>点击上传图片</h3>
+            <p>支持 JPG / PNG，最大 10MB</p>
+            <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="handleFile(this)">
+          </label>
+        </div>
+
+        <div style="margin-top:20px">
+          <h3 style="font-size:1rem;margin-bottom:12px">输入问题</h3>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+            <button onclick="setQuestion('图片中有船吗？')" style="padding:6px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:99px;font-size:.75rem;cursor:pointer;color:var(--text2);transition:all .2s" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">有船吗？</button>
+            <button onclick="setQuestion('天气怎么样？')" style="padding:6px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:99px;font-size:.75rem;cursor:pointer;color:var(--text2);transition:all .2s" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">天气</button>
+            <button onclick="setQuestion('图片中有多少人？')" style="padding:6px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:99px;font-size:.75rem;cursor:pointer;color:var(--text2);transition:all .2s" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">人数</button>
+            <button onclick="setQuestion('这张图片的主要颜色是什么？')" style="padding:6px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:99px;font-size:.75rem;cursor:pointer;color:var(--text2);transition:all .2s" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">颜色</button>
+            <button onclick="setQuestion('这是什么场景？')" style="padding:6px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:99px;font-size:.75rem;cursor:pointer;color:var(--text2);transition:all .2s" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">场景</button>
+          </div>
+          <textarea id="questionInput" placeholder="请输入关于图片的问题，或点击上方按钮快速选择..." style="
+            width:100%;padding:12px 14px;border-radius:var(--radius);
+            border:1px solid var(--border);background:var(--bg3);
+            font-family:var(--font);font-size:.88rem;color:var(--text);
+            resize:vertical;min-height:80px;outline:none;transition:border-color .2s
+          " onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'">图片中有船吗？</textarea>
+        </div>
+
+        <button onclick="runDemo()" style="
+          width:100%;margin-top:16px;padding:12px;
+          background:var(--primary);color:#fff;border:none;border-radius:var(--radius);
+          font-family:var(--font);font-size:.9rem;font-weight:600;cursor:pointer;
+          transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px
+        " onmouseover="this.style.background='var(--primary-d)';this.style.transform='translateY(-1px)'"
+           onmouseout="this.style.background='var(--primary)';this.style.transform='none'">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5,3 19,12 5,21"/></svg>
+          运行 CausalMM 演示
+        </button>
+      </div>
+
+      <!-- Right: Results -->
+      <div>
+        <div class="result-panel">
+          <div class="result-panel-header">
+            <span class="panel-title">推理结果</span>
+            <span class="panel-badge" id="statusBadge">等待运行</span>
+          </div>
+          <div class="result-panel-body">
+
+            <!-- Image Preview -->
+            <div class="preview-area" id="previewArea">
+              <img id="previewImg" src="https://picsum.photos/seed/cityscape/400/400" alt="预览" style="max-width:100%;border-radius:8px;max-height:240px;display:block;margin:0 auto">
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="progress-bar" style="margin-bottom:16px">
+              <div class="progress-fill" id="progressFill"></div>
+            </div>
+
+            <!-- Inference Steps -->
+            <div class="inference-steps" id="inferenceSteps">
+              <div class="inf-step" id="step1">
+                <div class="inf-num">1</div>
+                <div><div class="inf-title">加载图像</div><div class="inf-detail">CLIP 视觉编码器处理输入图像</div></div>
+              </div>
+              <div class="inf-step" id="step2">
+                <div class="inf-num">2</div>
+                <div><div class="inf-title">生成注意力图</div><div class="inf-detail">提取视觉自注意力分布 Aᵢ</div></div>
+              </div>
+              <div class="inf-step" id="step3">
+                <div class="inf-num">3</div>
+                <div><div class="inf-title">反事实干预</div><div class="inf-detail">执行 do(Aᵢ*) 和 do(Aₜ*) 反事实操作</div></div>
+              </div>
+              <div class="inf-step" id="step4">
+                <div class="inf-num">4</div>
+                <div><div class="inf-title">因果解码</div><div class="inf-detail">应用后门调整计算因果效应</div></div>
+              </div>
+              <div class="inf-step" id="step5">
+                <div class="inf-num">5</div>
+                <div><div class="inf-title">生成输出</div><div class="inf-detail">因果修正 logits 输出最终结果</div></div>
+              </div>
+            </div>
+
+            <!-- Output Comparison -->
+            <div class="output-compare" id="outputCompare" style="display:none;margin-top:16px">
+              <div class="out-col baseline">
+                <div class="out-label">🤖 LLaVA-1.5（基线）</div>
+                <div class="out-text" id="baselineOutput">正在等待推理...</div>
+              </div>
+              <div class="out-col causalmm">
+                <div class="out-label">✨ CausalMM（修正后）</div>
+                <div class="out-text" id="causalmmOutput">正在等待推理...</div>
+              </div>
+            </div>
+
+            <!-- Attention Heatmap -->
+            <div id="attnVis" style="margin-top:16px;display:none">
+              <div style="font-size:.8rem;font-weight:600;color:var(--text2);margin-bottom:8px">注意力分布对比</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                <div style="padding:12px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--border);text-align:center">
+                  <div style="font-size:.72rem;color:var(--text3);margin-bottom:6px">基线注意力</div>
+                  <canvas id="attnBaseline" width="120" height="120" style="border-radius:6px"></canvas>
+                </div>
+                <div style="padding:12px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--border);text-align:center">
+                  <div style="font-size:.72rem;color:var(--text3);margin-bottom:6px">因果修正注意力</div>
+                  <canvas id="attnCausal" width="120" height="120" style="border-radius:6px"></canvas>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- How it works -->
+        <div class="method-section" style="margin-top:24px">
+          <div class="section-tag">运行原理</div>
+          <h3>前端模拟推理说明</h3>
+          <p style="font-size:.85rem;color:var(--text2);margin-bottom:12px">
+            本演示在前端模拟 CausalMM 的推理流程。输出会根据您的问题类型动态生成，展示基线模型与 CausalMM 在不同问题场景下的表现差异。
+            真实模型推理需要 GPU 服务器。
+          </p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <span style="padding:4px 12px;background:var(--primary-bg);color:var(--primary);border-radius:99px;font-size:.78rem;font-weight:600">基于 LLaVA-1.5</span>
+            <span style="padding:4px 12px;background:var(--accent-bg);color:var(--accent);border-radius:99px;font-size:.78rem;font-weight:600">γ=1.0, ε=0.6</span>
+            <span style="padding:4px 12px;background:var(--bg3);color:var(--text2);border-radius:99px;font-size:.78rem;font-weight:600">问题驱动回答</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta-section">
+  <div class="container">
+    <h2>查看完整实验数据</h2>
+    <p>POPE、MME、VLind 三大基准的详细对比</p>
+    <div class="cta-buttons">
+      <a href="results.html" class="btn-primary">实验结果 →</a>
+      <a href="method.html" class="btn-secondary">方法解析 →</a>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand"><span class="logo-icon">◇</span><span>CausalMM</span></div>
+    <div class="footer-info"><p>CausalMM · ICLR 2025 · HKUST(GZ)</p></div>
+    <div class="footer-links">
+      <a href="index.html">概述</a>
+      <a href="method.html">方法</a>
+      <a href="results.html">结果</a>
+      <a href="demo.html">演示</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ── Sample image selection ──
+const sceneImgMap = {
+  scene1: 'https://picsum.photos/seed/cityscape/400/400',
+  scene2: 'https://picsum.photos/seed/nature/400/400',
+  scene3: 'https://picsum.photos/seed/objects/400/400',
+  scene4: 'https://picsum.photos/seed/people/400/400',
+};
+
+// ── Dynamic answer generation based on question type ──
+function generateAnswer(question, scene) {
+  const q = question.toLowerCase();
+  
+  // Yes/No questions (有没有、是否、吗？)
+  if (q.includes('有') || q.includes('吗') || q.includes('是否') || q.includes('是不是') || q.includes('有没有')) {
+    // Specific object detection
+    if (q.includes('船') || q.includes('船')) {
+      return {
+        baseline: `<span class="hl-hallucination">是的</span>，图片中有船（错误：混淆了背景中的车辆或物体）`,
+        causalmm: `<span class="hl-corrected">不，图片中没有船</span>。图片展示的是两个人在雨中撑伞的场景，背景是草地和车辆（准确识别）`,
+      };
+    }
+    if (q.includes('车') || q.includes('汽车') || q.includes('vehicle')) {
+      return {
+        baseline: `<span class="hl-hallucination">是的</span>，图片中有<span class="hl-hallucination">多辆汽车</span>（错误：高估了数量）`,
+        causalmm: `<span class="hl-corrected">是的</span>，背景中可以看到<span class="hl-corrected">一辆车</span>（准确识别）`,
+      };
+    }
+    if (q.includes('人') || q.includes('人物')) {
+      return {
+        baseline: `<span class="hl-hallucination">是的</span>，图片中有<span class="hl-hallucination">三个人</span>（错误：将阴影或物体误认为人）`,
+        causalmm: `<span class="hl-corrected">是的</span>，图片中有<span class="hl-corrected">两个人</span>——一位成人和一个孩子（准确计数）`,
+      };
+    }
+    if (q.includes('伞') || q.includes('雨伞')) {
+      return {
+        baseline: `<span class="hl-hallucination">是的</span>，有一把<span class="hl-hallucination">蓝色的伞</span>（错误：颜色识别错误）`,
+        causalmm: `<span class="hl-corrected">是的</span>，有一把<span class="hl-corrected">红黑相间的伞</span>（准确描述）`,
+      };
+    }
+    if (q.includes('雨') || q.includes('下雨')) {
+      return {
+        baseline: `<span class="hl-hallucination">没有</span>，看起来是晴天（错误：忽略了地面反光和伞的线索）`,
+        causalmm: `<span class="hl-corrected">是的</span>，从地面的反光和撑伞的行为可以判断<span class="hl-corrected">正在下雨</span>（准确推理）`,
+      };
+    }
+    // Generic yes/no fallback
+    return {
+      baseline: `<span class="hl-hallucination">是的</span>（错误：倾向于回答"是"，受语言先验影响）`,
+      causalmm: `<span class="hl-corrected">根据图片内容判断</span>（准确分析后给出正确答案）`,
+    };
+  }
+  
+  // Color questions
+  if (q.includes('颜色') || q.includes('色') || q.includes('color') || q.includes('什么颜色')) {
+    return {
+      baseline: `图片的主要颜色是<span class="hl-hallucination">蓝色和绿色</span>（错误：忽略了伞的红色）`,
+      causalmm: `图片的主要颜色是<span class="hl-corrected">红色、黑色（伞）、绿色（草地）和灰色（地面）</span>（全面准确）`,
+    };
+  }
+  
+  // Quantity questions
+  if (q.includes('多少') || q.includes('数量') || q.includes('count') || q.includes('几') || q.includes('几个')) {
+    if (q.includes('人')) {
+      return {
+        baseline: `图片中有<span class="hl-hallucination">三个人</span>（错误：将背景物体误认为人）`,
+        causalmm: `图片中有<span class="hl-corrected">两个人</span>——一位成人和一个孩子（准确）`,
+      };
+    }
+    return {
+      baseline: `图片中大约有<span class="hl-hallucination">5-6</span>个主要物体（高估）`,
+      causalmm: `图片中有<span class="hl-corrected">2个</span>人物、<span class="hl-corrected">1把伞</span>和背景车辆（准确计数）`,
+    };
+  }
+  
+  // What questions (什么)
+  if (q.includes('什么') || q.includes('what')) {
+    if (q.includes('天气') || q.includes('weather')) {
+      return {
+        baseline: `天气是<span class="hl-hallucination">晴天</span>（错误：忽略了下雨的线索）`,
+        causalmm: `天气是<span class="hl-corrected">雨天</span>，可以看到地面潮湿和撑伞的行为（准确推理）`,
+      };
+    }
+    if (q.includes('场景') || q.includes('地方') || q.includes('哪里')) {
+      return {
+        baseline: `这是一个<span class="hl-hallucination">海边沙滩</span>场景（错误：完全错误的场景识别）`,
+        causalmm: `这是一个<span class="hl-corrected">户外人行道/公园</span>场景，下雨天气（准确）`,
+      };
+    }
+    if (q.includes('做') || q.includes('doing')) {
+      return {
+        baseline: `他们<span class="hl-hallucination">在玩耍</span>（错误：随意猜测活动）`,
+        causalmm: `他们<span class="hl-corrected">在雨中撑伞站立</span>，可能是避雨或拍照（基于视觉证据）`,
+      };
+    }
+    return {
+      baseline: `图片显示<span class="hl-hallucination">两个人在公园里散步</span>（错误：场景和活动都错了）`,
+      causalmm: `图片显示<span class="hl-corrected">两个人在雨中撑伞</span>，背景是草地和车辆（准确）`,
+    };
+  }
+  
+  // Where questions (在哪里)
+  if (q.includes('在哪里') || q.includes('where') || q.includes('位置')) {
+    return {
+      baseline: `他们在<span class="hl-hallucination">海边</span>（错误：完全错误的地点）`,
+      causalmm: `他们在<span class="hl-corrected">户外人行道或公园小径</span>上，旁边是草地（准确）`,
+    };
+  }
+  
+  // Default: try to answer the specific question
+  return {
+    baseline: `<span class="hl-hallucination">图片中有两个人站在公园里</span>（答非所问，给出通用描述）`,
+    causalmm: `<span class="hl-corrected">根据您的问题，图片显示的是两个人在雨中撑伞的场景</span>（尝试回答问题）`,
+  };
+}
+
+function selectSample(el) {
+  document.querySelectorAll('.sample-img').forEach(s => s.classList.remove('selected'));
+  el.classList.add('selected');
+  const scene = el.dataset.scene;
+  document.getElementById('previewImg').src = sceneImgMap[scene];
+  // Clear previous results when switching samples
+  document.getElementById('outputCompare').style.display = 'none';
+  document.getElementById('attnVis').style.display = 'none';
+  document.getElementById('statusBadge').textContent = '等待运行';
+  document.getElementById('statusBadge').style.background = 'var(--bg3)';
+  document.getElementById('statusBadge').style.color = 'var(--text2)';
+  document.querySelectorAll('.inf-step').forEach(s => s.classList.remove('active', 'done'));
+  document.getElementById('progressFill').style.width = '0%';
+}
+
+function setQuestion(q) {
+  document.getElementById('questionInput').value = q;
+}
+
+// ── File upload ──
+function handleFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    document.getElementById('previewImg').src = e.target.result;
+    document.querySelectorAll('.sample-img').forEach(s => s.classList.remove('selected'));
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── Run demo ──
+let isRunning = false;
+
+function runDemo() {
+  if (isRunning) return;
+  isRunning = true;
+
+  const badge = document.getElementById('statusBadge');
+  const steps = document.querySelectorAll('.inf-step');
+  const progress = document.getElementById('progressFill');
+  const compare = document.getElementById('outputCompare');
+  const attnVis = document.getElementById('attnVis');
+  const question = document.getElementById('questionInput').value.trim();
+
+  // Reset
+  steps.forEach(s => { s.classList.remove('active', 'done'); });
+  compare.style.display = 'none';
+  attnVis.style.display = 'none';
+  progress.style.width = '0%';
+  badge.textContent = '运行中...';
+  badge.style.background = 'var(--primary-bg)';
+  badge.style.color = 'var(--primary)';
+
+  // Get scene
+  const selected = document.querySelector('.sample-img.selected');
+  const scene = selected ? selected.dataset.scene : 'custom';
+  
+  // Generate dynamic answers based on question
+  const answers = generateAnswer(question, scene);
+  
+  // Show initial loading state
+  document.getElementById('baselineOutput').innerHTML = `正在分析问题「${question}」...`;
+  document.getElementById('causalmmOutput').innerHTML = `正在通过因果推理分析...`;
+
+  let step = 0;
+  const interval = setInterval(() => {
+    if (step > 0) {
+      steps[step - 1].classList.remove('active');
+      steps[step - 1].classList.add('done');
+    }
+    if (step < 5) {
+      steps[step].classList.add('active');
+      progress.style.width = ((step + 1) / 5 * 100) + '%';
+      step++;
+    } else {
+      clearInterval(interval);
+      // Show final results using dynamically generated answers
+      badge.textContent = '已完成';
+      badge.style.background = 'var(--accent-bg)';
+      badge.style.color = 'var(--accent)';
+      document.getElementById('baselineOutput').innerHTML = answers.baseline;
+      document.getElementById('causalmmOutput').innerHTML = answers.causalmm;
+      compare.style.display = 'grid';
+      attnVis.style.display = 'block';
+      drawHeatmap('attnBaseline', '#f87171');
+      drawHeatmap('attnCausal', '#10b981');
+      isRunning = false;
+    }
+  }, 600);
+}
+
+// ── Heatmap ──
+function drawHeatmap(canvasId, color) {
+  const canvas = document.getElementById(canvasId);
+  const ctx = canvas.getContext('2d');
+  const size = 120, grid = 12, cell = size / grid;
+  const data = Array.from({length: grid * grid}, () => Math.random() * 0.8 + 0.2);
+
+  ctx.clearRect(0, 0, size, size);
+  for (let i = 0; i < grid; i++) {
+    for (let j = 0; j < grid; j++) {
+      const v = data[i * grid + j];
+      ctx.fillStyle = hexAlpha(color, v);
+      ctx.fillRect(j * cell, i * cell, cell, cell);
+    }
+  }
+  // border
+  ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+  ctx.lineWidth = 0.5;
+  for (let i = 0; i <= grid; i++) {
+    ctx.beginPath(); ctx.moveTo(i*cell,0); ctx.lineTo(i*cell,size); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0,i*cell); ctx.lineTo(size,i*cell); ctx.stroke();
+  }
+}
+
+function hexAlpha(hex, alpha) {
+  const r = parseInt(hex.slice(1,3),16);
+  const g = parseInt(hex.slice(3,5),16);
+  const b = parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+// Drag over
+const zone = document.getElementById('uploadZone');
+zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+zone.addEventListener('drop', e => {
+  e.preventDefault(); zone.classList.remove('drag-over');
+  const f = e.dataTransfer.files[0];
+  if (f && f.type.startsWith('image/')) {
+    document.getElementById('fileInput').files = e.dataTransfer.files;
+    const reader = new FileReader();
+    reader.onload = ev => document.getElementById('previewImg').src = ev.target.result;
+    reader.readAsDataURL(f);
+    document.querySelectorAll('.sample-img').forEach(s => s.classList.remove('selected'));
+  }
+});
+</script>
+</body>
+</html>

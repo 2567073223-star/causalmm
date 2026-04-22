@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CausalMM — 缓解多模态大模型幻觉</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="navbar">
+  <div class="nav-inner">
+    <a class="nav-logo" href="index.html">
+      <span class="logo-icon">◇</span>
+      <span>CausalMM</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html" class="active">概述</a></li>
+      <li><a href="method.html">方法解析</a></li>
+      <li><a href="results.html">实验结果</a></li>
+      <li><a href="demo.html">在线演示</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-badge">ICLR 2025 · 接受论文</div>
+    <h1 class="hero-title">
+      通过解析注意力因果性<br>
+      缓解多模态大模型的<span class="gradient-text">模态先验幻觉</span>
+    </h1>
+    <p class="hero-subtitle">
+      CausalMM 基于结构因果模型（SCM），将模态先验作为混淆因子，
+      利用后门调整与反事实推理，在不修改模型权重的条件下实现即插即用的幻觉抑制。
+    </p>
+
+    <!-- Key Metrics -->
+    <div class="hero-metrics">
+      <div class="metric-item">
+        <span class="metric-val">+5.37%</span>
+        <span class="metric-label">POPE 准确率提升</span>
+      </div>
+      <div class="metric-sep"></div>
+      <div class="metric-item">
+        <span class="metric-val">+164</span>
+        <span class="metric-label">MME 分数提升</span>
+      </div>
+      <div class="metric-sep"></div>
+      <div class="metric-item">
+        <span class="metric-val">+65.3%</span>
+        <span class="metric-label">VLind 最大提升</span>
+      </div>
+    </div>
+
+    <div class="hero-actions">
+      <a href="demo.html" class="btn-primary">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5,3 19,12 5,21"/></svg>
+        体验在线演示
+      </a>
+      <a href="results.html" class="btn-secondary">查看实验结果</a>
+    </div>
+  </div>
+</section>
+
+<!-- KEY IDEAS -->
+<section class="key-idea">
+  <div class="container">
+    <div class="key-idea-grid">
+      <div class="key-card reveal">
+        <div class="key-icon">🔗</div>
+        <h3>构建结构因果模型</h3>
+        <p>为 MLLM 建立因果图，区分因果路径与混淆路径，明确视觉/语言注意力对输出的真实因果效应</p>
+      </div>
+      <div class="key-card reveal">
+        <div class="key-icon">⚖️</div>
+        <h3>后门调整去混淆</h3>
+        <p>通过后门调整准则截断模态先验（视觉先验 Pᵥ、语言先验 P<sub>l</sub>）的混淆路径，获得无偏的因果效应估计</p>
+      </div>
+      <div class="key-card reveal">
+        <div class="key-icon">🔄</div>
+        <h3>反事实推理</h3>
+        <p>在视觉注意力层和 LLM 注意力层同时执行 do 操作，生成反事实输出，通过多模态协同解码抑制幻觉</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SCM -->
+<section class="scm-section">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag">核心框架</div>
+      <h2>结构因果模型（SCM）</h2>
+      <p>点击任意节点查看其含义与因果作用</p>
+    </div>
+
+    <div class="scm-card">
+      <!-- Legend -->
+      <div class="scm-legend">
+        <div class="legend-item">
+          <div class="legend-line causal"></div>
+          <span>因果路径</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-line confound"></div>
+          <span>混淆路径（被截断）</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-line do" style="background:var(--accent)"></div>
+          <span>反事实干预</span>
+        </div>
+      </div>
+
+      <!-- SVG -->
+      <div class="scm-svg-full-wrap">
+        <svg id="scmSVG" viewBox="0 0 800 300" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="am" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L7,3 z" fill="#4f46e5"/>
+            </marker>
+            <marker id="ac" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L7,3 z" fill="#ea580c"/>
+            </marker>
+          </defs>
+
+          <!-- 因果路径 -->
+          <line x1="130" y1="100" x2="190" y2="148" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#am)"/>
+          <line x1="150" y1="88" x2="320" y2="88" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#am)"/>
+          <line x1="240" y1="165" x2="315" y2="165" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#am)"/>
+          <line x1="370" y1="165" x2="680" y2="240" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#am)"/>
+          <line x1="470" y1="88" x2="540" y2="148" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#am)"/>
+          <line x1="590" y1="165" x2="682" y2="232" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#am)"/>
+
+          <!-- 混淆路径 -->
+          <line x1="188" y1="38" x2="215" y2="148" stroke="#ea580c" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#ac)" opacity=".7"/>
+          <line x1="215" y1="28" x2="325" y2="148" stroke="#ea580c" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#ac)" opacity=".7"/>
+          <line x1="568" y1="38" x2="548" y2="148" stroke="#ea580c" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#ac)" opacity=".7"/>
+          <line x1="590" y1="50" x2="698" y2="234" stroke="#ea580c" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#ac)" opacity=".7"/>
+
+          <!-- I -->
+          <g class="scm-g-node" data-info="图像输入 I：提供视觉内容，是整个因果链的起点，直接影响视觉注意力 Aᵢ 和视觉 token Tᵢ">
+            <rect x="60" y="60" width="76" height="46" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.5"/>
+            <text x="98" y="79" text-anchor="middle" fill="#4f46e5" font-size="16" font-weight="700" font-family="Inter,sans-serif">I</text>
+            <text x="98" y="95" text-anchor="middle" fill="#6366f1" font-size="9" font-family="Inter,sans-serif">图像输入</text>
+          </g>
+
+          <!-- Pv -->
+          <g class="scm-g-node" data-info="视觉先验 Pᵥ：CLIP 视觉编码器中的参数化知识，作为混淆因子，同时影响视觉注意力 Aᵢ 和视觉 token Tᵢ（导致幻觉）">
+            <rect x="146" y="6" width="80" height="42" rx="8" fill="#fff7ed" stroke="#ea580c" stroke-width="1.5" stroke-dasharray="4,3"/>
+            <text x="186" y="23" text-anchor="middle" fill="#ea580c" font-size="12" font-weight="700" font-family="Inter,sans-serif">P<tspan font-size="8" dx="1" dy="2">v</tspan></text>
+            <text x="186" y="40" text-anchor="middle" fill="#ea580c" font-size="8.5" font-family="Inter,sans-serif">视觉先验</text>
+          </g>
+
+          <!-- Ai -->
+          <g class="scm-g-node" data-info="视觉注意力 Aᵢ：视觉编码器（CLIP ViT）中的注意力分布，受 I 和 Pᵥ 共同影响。CausalMM 对 Aᵢ 执行 do(Aᵢ = Aᵢ*) 反事实干预">
+            <rect x="182" y="140" width="66" height="48" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+            <text x="215" y="160" text-anchor="middle" fill="#059669" font-size="13" font-weight="700" font-family="Inter,sans-serif">A<tspan font-size="8" dx="1" dy="2">i</tspan></text>
+            <text x="215" y="178" text-anchor="middle" fill="#059669" font-size="8.5" font-family="Inter,sans-serif">视觉注意力</text>
+          </g>
+
+          <!-- Ti -->
+          <g class="scm-g-node" data-info="视觉 Token Tᵢ：视觉编码器的输出嵌入，由 I、Pᵥ、Aᵢ 共同决定，最终贡献到模型输出">
+            <rect x="310" y="140" width="70" height="48" rx="8" fill="#f1f3f8" stroke="#94a3b8" stroke-width="1.5"/>
+            <text x="345" y="160" text-anchor="middle" fill="#475569" font-size="13" font-weight="700" font-family="Inter,sans-serif">T<tspan font-size="8" dx="1" dy="2">i</tspan></text>
+            <text x="345" y="178" text-anchor="middle" fill="#475569" font-size="8.5" font-family="Inter,sans-serif">视觉 Token</text>
+          </g>
+
+          <!-- Tt -->
+          <g class="scm-g-node" data-info="语言 Token Tₜ：文本输入的嵌入表示，影响 LLM 自注意力 Aₜ 并直接贡献到最终输出">
+            <rect x="450" y="60" width="70" height="46" rx="8" fill="#f1f3f8" stroke="#94a3b8" stroke-width="1.5"/>
+            <text x="485" y="79" text-anchor="middle" fill="#475569" font-size="13" font-weight="700" font-family="Inter,sans-serif">T<tspan font-size="8" dx="1" dy="2">t</tspan></text>
+            <text x="485" y="95" text-anchor="middle" fill="#475569" font-size="8.5" font-family="Inter,sans-serif">语言 Token</text>
+          </g>
+
+          <!-- Pl -->
+          <g class="scm-g-node" data-info="语言先验 Pₗ：LLM 中的参数化语言知识，作为混淆因子，同时影响语言注意力 Aₜ 和最终输出（导致语言偏见幻觉）">
+            <rect x="538" y="6" width="80" height="42" rx="8" fill="#fff7ed" stroke="#ea580c" stroke-width="1.5" stroke-dasharray="4,3"/>
+            <text x="578" y="23" text-anchor="middle" fill="#ea580c" font-size="12" font-weight="700" font-family="Inter,sans-serif">P<tspan font-size="8" dx="1" dy="2">l</tspan></text>
+            <text x="578" y="40" text-anchor="middle" fill="#ea580c" font-size="8.5" font-family="Inter,sans-serif">语言先验</text>
+          </g>
+
+          <!-- At -->
+          <g class="scm-g-node" data-info="LLM 注意力 Aₜ：多模态 LLM 中的自注意力，受 Tₜ 和 Pₗ 共同影响。CausalMM 对 Aₜ 执行 do(Aₜ = Aₜ*) 反事实干预">
+            <rect x="536" y="140" width="66" height="48" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+            <text x="569" y="160" text-anchor="middle" fill="#059669" font-size="13" font-weight="700" font-family="Inter,sans-serif">A<tspan font-size="8" dx="1" dy="2">t</tspan></text>
+            <text x="569" y="178" text-anchor="middle" fill="#059669" font-size="8.5" font-family="Inter,sans-serif">LLM 注意力</text>
+          </g>
+
+          <!-- O -->
+          <g class="scm-g-node" data-info="模型输出 O：最终生成的文本，由 Tᵢ、Aₜ、Tₜ、Pₗ 共同决定。混淆因子 Pᵥ/Pₗ 使输出偏离真实因果效应，产生幻觉">
+            <rect x="678" y="226" width="76" height="48" rx="10" fill="#eef2ff" stroke="#4f46e5" stroke-width="2"/>
+            <text x="716" y="248" text-anchor="middle" fill="#4f46e5" font-size="18" font-weight="800" font-family="Inter,sans-serif">O</text>
+            <text x="716" y="265" text-anchor="middle" fill="#4f46e5" font-size="9" font-family="Inter,sans-serif">模型输出</text>
+          </g>
+
+          <!-- 标签 -->
+          <text x="98" y="120" text-anchor="middle" fill="rgba(99,102,241,.35)" font-size="8" font-family="Inter,sans-serif">Image</text>
+          <text x="186" y="58" text-anchor="middle" fill="rgba(234,88,12,.4)" font-size="7.5" font-family="Inter,sans-serif">CONF</text>
+          <text x="578" y="58" text-anchor="middle" fill="rgba(234,88,12,.4)" font-size="7.5" font-family="Inter,sans-serif">CONF</text>
+          <text x="215" y="205" text-anchor="middle" fill="rgba(5,150,105,.45)" font-size="8" font-family="Inter,sans-serif">do(Aᵢ*)</text>
+          <text x="569" y="205" text-anchor="middle" fill="rgba(5,150,105,.45)" font-size="8" font-family="Inter,sans-serif">do(Aₜ*)</text>
+        </svg>
+      </div>
+
+      <!-- Node Legend -->
+      <div class="scm-nodes-legend">
+        <div class="scm-node-pill input"><div class="dot" style="background:#4f46e5"></div>输入 / 输出</div>
+        <div class="scm-node-pill confound"><div class="dot" style="background:#ea580c"></div>混淆因子</div>
+        <div class="scm-node-pill attention"><div class="dot" style="background:#059669"></div>注意力（干预点）</div>
+        <div class="scm-node-pill embed"><div class="dot" style="background:#94a3b8"></div>Token 嵌入</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PIPELINE -->
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag">推理流程</div>
+      <h2>三阶段因果推理框架</h2>
+      <p>从因果建模到后门调整，再到反事实解码</p>
+    </div>
+
+    <div class="pipeline-grid">
+      <div class="pipe-card reveal">
+        <div class="pipe-num" data-num="01">01</div>
+        <div class="pipe-icon">🏗️</div>
+        <h3>构建结构因果模型</h3>
+        <p>为 MLLM 建立因果图 G，定义图像 I → 注意力 A → Token → 输出 O 的因果链条</p>
+        <div class="pipe-formula">G : I → Aᵢ → Tᵢ → O</div>
+      </div>
+      <div class="pipe-card reveal">
+        <div class="pipe-num" data-num="02">02</div>
+        <div class="pipe-icon">⚙️</div>
+        <h3>注意力反事实干预</h3>
+        <p>对视觉注意力 Aᵢ 和 LLM 注意力 Aₜ 执行 do 算子，生成四种干预注意力状态</p>
+        <div class="pipe-formula">do(Aᵢ=Aᵢ*), do(Aₜ=Aₜ*)</div>
+      </div>
+      <div class="pipe-card reveal">
+        <div class="pipe-num" data-num="03">03</div>
+        <div class="pipe-icon">🔍</div>
+        <h3>后门调整 + 因果解码</h3>
+        <p>通过后门调整截断混淆路径，计算因果效应，最终输出消除幻觉的因果修正结果</p>
+        <div class="pipe-formula">P(O|do(A)) = Σ P(O|T,A)P(T|P)</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="container">
+    <h2>深入了解 CausalMM</h2>
+    <p>查看完整方法解析、实验数据，或上传图片亲身体验幻觉抑制效果</p>
+    <div class="cta-buttons">
+      <a href="method.html" class="btn-primary">方法详解 →</a>
+      <a href="results.html" class="btn-secondary">实验结果 →</a>
+      <a href="demo.html" class="btn-secondary">在线演示 →</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <span class="logo-icon">◇</span>
+      <span>CausalMM</span>
+    </div>
+    <div class="footer-info">
+      <p>Mitigating Modality Prior-Induced Hallucinations in MLLMs via Deciphering Attention Causality · ICLR 2025</p>
+    </div>
+    <div class="footer-links">
+      <a href="method.html">方法</a>
+      <a href="results.html">结果</a>
+      <a href="demo.html">演示</a>
+      <a href="https://github.com/The-Martyr/CausalMM" target="_blank">GitHub</a>
+    </div>
+  </div>
+</footer>
+
+<script src="main.js"></script>
+<script>
+  // SCM interaction
+  const nodes = document.querySelectorAll('.scm-g-node');
+  nodes.forEach(n => {
+    n.addEventListener('click', () => {
+      nodes.forEach(x => x.querySelector('rect').setAttribute('stroke-width', '1.5'));
+      n.querySelector('rect').setAttribute('stroke-width', '2.5');
+    });
+  });
+
+  // Reveal on scroll
+  const reveals = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: .15 });
+  reveals.forEach(r => io.observe(r));
+</script>
+</body>
+</html>

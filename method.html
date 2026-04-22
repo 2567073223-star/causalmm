@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>方法解析 — CausalMM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="nav-inner">
+    <a class="nav-logo" href="index.html"><span class="logo-icon">◇</span><span>CausalMM</span></a>
+    <ul class="nav-links">
+      <li><a href="index.html">概述</a></li>
+      <li><a href="method.html" class="active">方法解析</a></li>
+      <li><a href="results.html">实验结果</a></li>
+      <li><a href="demo.html">在线演示</a></li>
+    </ul>
+  </div>
+</nav>
+
+<section class="method-hero">
+  <div class="hero-content">
+    <div class="hero-badge">ICLR 2025</div>
+    <h1 class="hero-title">方法解析</h1>
+    <p class="hero-subtitle">结构因果建模 · 后门调整去混淆 · 反事实推理解码</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+
+    <!-- Backdoor -->
+    <div class="method-section">
+      <div class="section-tag">理论基础</div>
+      <h3>后门调整准则</h3>
+      <p>视觉注意力 Aᵢ 对输出 O 的因果效应通过后门调整计算，消除视觉先验 Pᵥ 的混淆：</p>
+      <div class="formula-card">
+        <div class="label">后门调整公式</div>
+        <span class="eq">P(O | do(Aᵢ = a)) = Σ<sub>pᵥ</sub> P(O | Aᵢ = a, Pᵥ = pᵥ) · P(Pᵥ = pᵥ)</span>
+      </div>
+    </div>
+
+    <!-- Interventions -->
+    <div class="method-section">
+      <div class="section-tag">核心机制</div>
+      <h3>四种注意力干预方式</h3>
+      <div class="intervention-cards">
+        <div class="int-card">
+          <div class="int-icon">🎲</div>
+          <h4>随机注意力</h4>
+          <p>A* = random(A)</p>
+          <p style="margin-top:6px;font-size:.72rem;color:var(--text3)">均匀随机分布替换原始权重</p>
+        </div>
+        <div class="int-card">
+          <div class="int-icon">➗</div>
+          <h4>均匀注意力</h4>
+          <p>A* = uniform(H·W)</p>
+          <p style="margin-top:6px;font-size:.72rem;color:var(--text3)">注意力均分到所有空间位置</p>
+        </div>
+        <div class="int-card">
+          <div class="int-icon">🔄</div>
+          <h4>反转注意力</h4>
+          <p>A* = max(A) - A</p>
+          <p style="margin-top:6px;font-size:.72rem;color:var(--text3)">反转权重，突出被忽视区域</p>
+        </div>
+        <div class="int-card">
+          <div class="int-icon">🔀</div>
+          <h4>扰乱注意力</h4>
+          <p>A* = shuffle(A)</p>
+          <p style="margin-top:6px;font-size:.72rem;color:var(--text3)">随机打乱注意力空间顺序</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Counterfactual Modes -->
+    <div class="method-section">
+      <div class="section-tag">反事实模式</div>
+      <h3>三种推理模式</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:16px">
+        <div style="padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--border)">
+          <div style="font-size:1.6rem;margin-bottom:10px">👁️</div>
+          <h4 style="margin-bottom:6px">仅视觉反事实</h4>
+          <p style="font-size:.82rem;color:var(--text2)">do(Aᵢ = Aᵢ*)，仅在视觉编码器层干预，适合图像质量高的场景</p>
+          <div class="pipe-formula" style="margin-top:12px">do(Aᵢ)</div>
+        </div>
+        <div style="padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--border)">
+          <div style="font-size:1.6rem;margin-bottom:10px">💬</div>
+          <h4 style="margin-bottom:6px">仅语言反事实</h4>
+          <p style="font-size:.82rem;color:var(--text2)">do(Aₜ = Aₜ*)，仅在 LLM 自注意力层干预，适合语言偏见主导的场景</p>
+          <div class="pipe-formula" style="margin-top:12px">do(Aₜ)</div>
+        </div>
+        <div style="padding:24px;background:var(--primary-bg);border-radius:var(--radius);border:1px solid rgba(79,70,229,.25)">
+          <div style="font-size:1.6rem;margin-bottom:10px">🔗</div>
+          <h4 style="margin-bottom:6px">多模态联合反事实</h4>
+          <p style="font-size:.82rem;color:var(--text2)">do(Aᵢ = Aᵢ*, Aₜ = Aₜ*)，两层同时干预，效果最优，推荐默认使用</p>
+          <div class="pipe-formula" style="margin-top:12px">do(Aᵢ, Aₜ)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Decoding -->
+    <div class="method-section">
+      <div class="section-tag">因果解码</div>
+      <h3>因果修正解码</h3>
+      <p>最终 token 生成概率由因果修正 logits 计算：</p>
+      <div class="formula-card">
+        <div class="label">因果修正解码公式</div>
+        <span class="eq">ℓ<sub>next</sub> = ℓ<sub>t</sub> + γ · ((ℓ<sub>t</sub> − ℓ<sub>cfv,t</sub>) + (ℓ<sub>t</sub> − ℓ<sub>cfl,t</sub>))</span>
+      </div>
+      <p>其中 ℓ<sub>t</sub> 为原始 logits，ℓ<sub>cfv,t</sub> / ℓ<sub>cfl,t</sub> 为视觉/语言反事实 logits，γ 为因果效应强度超参数（论文默认 γ=1.0）。</p>
+    </div>
+
+    <!-- Ablation -->
+    <div class="method-section">
+      <div class="section-tag">消融实验</div>
+      <h3>干预层消融</h3>
+      <p>视觉编码器深层（layer 22-30）和 LLM 深层（layer 20-30）干预效果最优：</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:16px">
+        <div style="padding:20px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--border)">
+          <h4 style="font-size:.9rem;margin-bottom:10px">视觉编码器干预层</h4>
+          <div style="font-family:var(--mono);font-size:.8rem;color:var(--primary);background:var(--surface);padding:14px;border-radius:8px;line-height:2">
+            浅层 0-10 : <span style="color:var(--text3)">效果弱</span><br>
+            中层 10-22 : <span style="color:var(--text2)">中等</span><br>
+            <strong>深层 22-30 : <span style="color:var(--accent)">最优 ✓</span></strong>
+          </div>
+        </div>
+        <div style="padding:20px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--border)">
+          <h4 style="font-size:.9rem;margin-bottom:10px">LLM 干预层</h4>
+          <div style="font-family:var(--mono);font-size:.8rem;color:var(--primary);background:var(--surface);padding:14px;border-radius:8px;line-height:2">
+            浅层 0-10 : <span style="color:var(--text3)">效果弱</span><br>
+            中层 10-20 : <span style="color:var(--text2)">中等</span><br>
+            <strong>深层 20-30 : <span style="color:var(--accent)">最优 ✓</span></strong>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section class="cta-section">
+  <div class="container">
+    <h2>深入查看实验数据</h2>
+    <p>POPE、MME、VLind 三大基准的完整对比结果</p>
+    <div class="cta-buttons">
+      <a href="results.html" class="btn-primary">实验结果 →</a>
+      <a href="demo.html" class="btn-secondary">在线演示 →</a>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand"><span class="logo-icon">◇</span><span>CausalMM</span></div>
+    <div class="footer-info"><p>CausalMM · ICLR 2025 · HKUST(GZ)</p></div>
+    <div class="footer-links">
+      <a href="index.html">概述</a>
+      <a href="method.html">方法</a>
+      <a href="results.html">结果</a>
+      <a href="demo.html">演示</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
