@@ -40,19 +40,19 @@
         <div class="sample-gallery">
           <div class="sample-img selected" data-scene="scene1" onclick="selectSample(this)">
             <img src="https://picsum.photos/seed/cityscape/400/400" alt="城市街景" loading="lazy">
-            <div class="sample-img-label">场景一：城市街景</div>
+            <div class="sample-img-label">🏙️ 城市街景</div>
           </div>
           <div class="sample-img" data-scene="scene2" onclick="selectSample(this)">
             <img src="https://picsum.photos/seed/nature/400/400" alt="自然风景" loading="lazy">
-            <div class="sample-img-label">场景二：自然风景</div>
+            <div class="sample-img-label">🏔️ 自然风景</div>
           </div>
           <div class="sample-img" data-scene="scene3" onclick="selectSample(this)">
             <img src="https://picsum.photos/seed/objects/400/400" alt="物体特写" loading="lazy">
-            <div class="sample-img-label">场景三：物体特写</div>
+            <div class="sample-img-label">📦 物体特写</div>
           </div>
           <div class="sample-img" data-scene="scene4" onclick="selectSample(this)">
             <img src="https://picsum.photos/seed/people/400/400" alt="人物场景" loading="lazy">
-            <div class="sample-img-label">场景四：人物场景</div>
+            <div class="sample-img-label">👤 人物场景</div>
           </div>
         </div>
 
@@ -67,13 +67,13 @@
         </div>
 
         <div style="margin-top:20px">
-          <h3 style="font-size:1rem;margin-bottom:12px">输入问题</h3>
-          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px">
-            <button onclick="setQuestion('图片中有船吗？')" style="padding:6px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:99px;font-size:.75rem;cursor:pointer;color:var(--text2);transition:all .2s" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">有船吗？</button>
-            <button onclick="setQuestion('天气怎么样？')" style="padding:6px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:99px;font-size:.75rem;cursor:pointer;color:var(--text2);transition:all .2s" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">天气</button>
-            <button onclick="setQuestion('图片中有多少人？')" style="padding:6px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:99px;font-size:.75rem;cursor:pointer;color:var(--text2);transition:all .2s" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">人数</button>
-            <button onclick="setQuestion('这张图片的主要颜色是什么？')" style="padding:6px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:99px;font-size:.75rem;cursor:pointer;color:var(--text2);transition:all .2s" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">颜色</button>
-            <button onclick="setQuestion('这是什么场景？')" style="padding:6px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:99px;font-size:.75rem;cursor:pointer;color:var(--text2);transition:all .2s" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">场景</button>
+          <h3 style="font-size:1rem;margin-bottom:12px">输入问题 <span id="sceneHint" style="font-size:.75rem;color:var(--text3);font-weight:400"></span></h3>
+          <div id="quickQuestions" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+            <button onclick="setQuestion('图片中有船吗？')" class="q-btn" style="padding:6px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:99px;font-size:.75rem;cursor:pointer;color:var(--text2);transition:all .2s" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">有船吗？</button>
+            <button onclick="setQuestion('天气怎么样？')" class="q-btn" style="padding:6px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:99px;font-size:.75rem;cursor:pointer;color:var(--text2);transition:all .2s" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">天气</button>
+            <button onclick="setQuestion('图片中有多少人？')" class="q-btn" style="padding:6px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:99px;font-size:.75rem;cursor:pointer;color:var(--text2);transition:all .2s" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">人数</button>
+            <button onclick="setQuestion('这张图片的主要颜色是什么？')" class="q-btn" style="padding:6px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:99px;font-size:.75rem;cursor:pointer;color:var(--text2);transition:all .2s" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">颜色</button>
+            <button onclick="setQuestion('这是什么场景？')" class="q-btn" style="padding:6px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:99px;font-size:.75rem;cursor:pointer;color:var(--text2);transition:all .2s" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">场景</button>
           </div>
           <textarea id="questionInput" placeholder="请输入关于图片的问题，或点击上方按钮快速选择..." style="
             width:100%;padding:12px 14px;border-radius:var(--radius);
@@ -173,13 +173,13 @@
           <div class="section-tag">运行原理</div>
           <h3>前端模拟推理说明</h3>
           <p style="font-size:.85rem;color:var(--text2);margin-bottom:12px">
-            本演示在前端模拟 CausalMM 的推理流程。输出会根据您的问题类型动态生成，展示基线模型与 CausalMM 在不同问题场景下的表现差异。
-            真实模型推理需要 GPU 服务器。
+            本演示模拟 CausalMM 的因果推理过程。<strong>不同图片 + 不同问题 → 不同答案</strong>。
+            基线模型会基于先验产生幻觉，CausalMM 通过反事实推理准确回答。真实模型推理需要 GPU 服务器。
           </p>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <span style="padding:4px 12px;background:var(--primary-bg);color:var(--primary);border-radius:99px;font-size:.78rem;font-weight:600">基于 LLaVA-1.5</span>
             <span style="padding:4px 12px;background:var(--accent-bg);color:var(--accent);border-radius:99px;font-size:.78rem;font-weight:600">γ=1.0, ε=0.6</span>
-            <span style="padding:4px 12px;background:var(--bg3);color:var(--text2);border-radius:99px;font-size:.78rem;font-weight:600">问题驱动回答</span>
+            <span style="padding:4px 12px;background:var(--bg3);color:var(--text2);border-radius:99px;font-size:.78rem;font-weight:600">图片+问题驱动</span>
           </div>
         </div>
 
@@ -221,111 +221,269 @@ const sceneImgMap = {
   scene4: 'https://picsum.photos/seed/people/400/400',
 };
 
-// ── Dynamic answer generation based on question type ──
+// ── Scene-specific content definitions ──
+const sceneContent = {
+  scene1: {
+    name: '城市街景',
+    description: '展示现代城市建筑群，包括高楼大厦、玻璃幕墙、街道设施，背景有天空和可能的城市交通工具',
+    objects: ['建筑', '高楼', '窗户', '街道', '天空'],
+    colors: ['灰色', '蓝色', '白色', '玻璃反光'],
+    // 常见幻觉：把建筑误认为其他物体
+  },
+  scene2: {
+    name: '自然风景',
+    description: '展示山脉、森林、草原、湖泊等自然景观，包含天空、云朵、树木和草地',
+    objects: ['山脉', '树木', '草地', '天空', '云朵'],
+    colors: ['绿色', '蓝色', '棕色', '白色'],
+    // 常见幻觉：混淆季节或天气
+  },
+  scene3: {
+    name: '物体特写',
+    description: '某个物体或物品的特写视图，可能是食物、家具、电子产品或其他日常物品',
+    objects: ['物体主体', '表面纹理', '背景'],
+    colors: ['主体色', '背景色', '光泽'],
+    // 常见幻觉：高估数量或添加不存在细节
+  },
+  scene4: {
+    name: '人物场景',
+    description: '包含人物的场景，可能是室内或室外，人物可能在进行某种活动或静止',
+    objects: ['人物', '背景环境', '可能的道具'],
+    colors: ['肤色', '衣物色', '背景色'],
+    // 常见幻觉：错误判断人数或活动
+  }
+};
+
+// ── Dynamic answer generation based on BOTH question type AND scene ──
 function generateAnswer(question, scene) {
   const q = question.toLowerCase();
+  const content = sceneContent[scene] || sceneContent.scene1;
   
-  // Yes/No questions (有没有、是否、吗？)
-  if (q.includes('有') || q.includes('吗') || q.includes('是否') || q.includes('是不是') || q.includes('有没有')) {
-    // Specific object detection
-    if (q.includes('船') || q.includes('船')) {
+  // ========== 场景1: 城市街景 ==========
+  if (scene === 'scene1') {
+    // 有没有船
+    if (q.includes('有') && (q.includes('船') || q.includes('boat'))) {
       return {
-        baseline: `<span class="hl-hallucination">是的</span>，图片中有船（错误：混淆了背景中的车辆或物体）`,
-        causalmm: `<span class="hl-corrected">不，图片中没有船</span>。图片展示的是两个人在雨中撑伞的场景，背景是草地和车辆（准确识别）`,
+        baseline: `<span class="hl-hallucination">是的</span>，图片中可以看到<span class="hl-hallucination">河面上的船只</span>（错误：混淆了建筑窗户和高楼轮廓）`,
+        causalmm: `<span class="hl-corrected">不，图片中没有船</span>。这是城市建筑群，灰色的高楼和玻璃幕墙是建筑特征，不是船只（准确识别）`,
       };
     }
-    if (q.includes('车') || q.includes('汽车') || q.includes('vehicle')) {
+    // 有没有人
+    if (q.includes('有') && (q.includes('人') || q.includes('人物'))) {
       return {
-        baseline: `<span class="hl-hallucination">是的</span>，图片中有<span class="hl-hallucination">多辆汽车</span>（错误：高估了数量）`,
-        causalmm: `<span class="hl-corrected">是的</span>，背景中可以看到<span class="hl-corrected">一辆车</span>（准确识别）`,
+        baseline: `<span class="hl-hallucination">是的</span>，可以看到<span class="hl-hallucination">街道上行走的行人</span>（错误：图片是远景建筑，行人难以辨认）`,
+        causalmm: `<span class="hl-corrected">无法确定</span>。图片是城市建筑远景，人物细节不可见，不应随意假设（准确识别）`,
       };
     }
-    if (q.includes('人') || q.includes('人物')) {
+    // 有没有车
+    if (q.includes('有') && (q.includes('车') || q.includes('汽车'))) {
       return {
-        baseline: `<span class="hl-hallucination">是的</span>，图片中有<span class="hl-hallucination">三个人</span>（错误：将阴影或物体误认为人）`,
-        causalmm: `<span class="hl-corrected">是的</span>，图片中有<span class="hl-corrected">两个人</span>——一位成人和一个孩子（准确计数）`,
+        baseline: `<span class="hl-hallucination">是的</span>，街道上有<span class="hl-hallucination">很多汽车</span>在行驶（错误：图片没有显示街道交通）`,
+        causalmm: `<span class="hl-corrected">无法确定</span>。图片主要展示建筑立面，街道车辆细节不可见（准确识别）`,
       };
     }
-    if (q.includes('伞') || q.includes('雨伞')) {
+    // 颜色问题
+    if (q.includes('颜色') || q.includes('什么颜色')) {
       return {
-        baseline: `<span class="hl-hallucination">是的</span>，有一把<span class="hl-hallucination">蓝色的伞</span>（错误：颜色识别错误）`,
-        causalmm: `<span class="hl-corrected">是的</span>，有一把<span class="hl-corrected">红黑相间的伞</span>（准确描述）`,
+        baseline: `图片的主要颜色是<span class="hl-hallucination">黄色和橙色</span>（错误：混淆了夕阳光照与实际建筑颜色）`,
+        causalmm: `图片的主要颜色是<span class="hl-corrected">灰色、蓝色（天空）和白色（云朵）</span>，展示了现代城市的典型配色（准确识别）`,
       };
     }
-    if (q.includes('雨') || q.includes('下雨')) {
-      return {
-        baseline: `<span class="hl-hallucination">没有</span>，看起来是晴天（错误：忽略了地面反光和伞的线索）`,
-        causalmm: `<span class="hl-corrected">是的</span>，从地面的反光和撑伞的行为可以判断<span class="hl-corrected">正在下雨</span>（准确推理）`,
-      };
-    }
-    // Generic yes/no fallback
-    return {
-      baseline: `<span class="hl-hallucination">是的</span>（错误：倾向于回答"是"，受语言先验影响）`,
-      causalmm: `<span class="hl-corrected">根据图片内容判断</span>（准确分析后给出正确答案）`,
-    };
-  }
-  
-  // Color questions
-  if (q.includes('颜色') || q.includes('色') || q.includes('color') || q.includes('什么颜色')) {
-    return {
-      baseline: `图片的主要颜色是<span class="hl-hallucination">蓝色和绿色</span>（错误：忽略了伞的红色）`,
-      causalmm: `图片的主要颜色是<span class="hl-corrected">红色、黑色（伞）、绿色（草地）和灰色（地面）</span>（全面准确）`,
-    };
-  }
-  
-  // Quantity questions
-  if (q.includes('多少') || q.includes('数量') || q.includes('count') || q.includes('几') || q.includes('几个')) {
-    if (q.includes('人')) {
-      return {
-        baseline: `图片中有<span class="hl-hallucination">三个人</span>（错误：将背景物体误认为人）`,
-        causalmm: `图片中有<span class="hl-corrected">两个人</span>——一位成人和一个孩子（准确）`,
-      };
-    }
-    return {
-      baseline: `图片中大约有<span class="hl-hallucination">5-6</span>个主要物体（高估）`,
-      causalmm: `图片中有<span class="hl-corrected">2个</span>人物、<span class="hl-corrected">1把伞</span>和背景车辆（准确计数）`,
-    };
-  }
-  
-  // What questions (什么)
-  if (q.includes('什么') || q.includes('what')) {
+    // 天气问题
     if (q.includes('天气') || q.includes('weather')) {
       return {
-        baseline: `天气是<span class="hl-hallucination">晴天</span>（错误：忽略了下雨的线索）`,
-        causalmm: `天气是<span class="hl-corrected">雨天</span>，可以看到地面潮湿和撑伞的行为（准确推理）`,
+        baseline: `天气看起来是<span class="hl-hallucination">晴天</span>，阳光明媚（错误：没有充分分析天空云层）`,
+        causalmm: `天气可能是<span class="hl-corrected">多云</span>或<span class="hl-corrected">阴天</span>，天空呈现均匀的灰蓝色调（准确识别）`,
       };
     }
-    if (q.includes('场景') || q.includes('地方') || q.includes('哪里')) {
+    // 场景问题
+    if (q.includes('场景') || q.includes('什么') && (q.includes('地方') || q.includes('哪里'))) {
       return {
-        baseline: `这是一个<span class="hl-hallucination">海边沙滩</span>场景（错误：完全错误的场景识别）`,
-        causalmm: `这是一个<span class="hl-corrected">户外人行道/公园</span>场景，下雨天气（准确）`,
+        baseline: `这是<span class="hl-hallucination">海边风景</span>（错误：完全识别错误）`,
+        causalmm: `这是<span class="hl-corrected">城市建筑群</span>，展示高楼大厦和城市天际线（准确识别）`,
       };
     }
-    if (q.includes('做') || q.includes('doing')) {
+    // 数量问题
+    if (q.includes('多少') && q.includes('建筑')) {
       return {
-        baseline: `他们<span class="hl-hallucination">在玩耍</span>（错误：随意猜测活动）`,
-        causalmm: `他们<span class="hl-corrected">在雨中撑伞站立</span>，可能是避雨或拍照（基于视觉证据）`,
+        baseline: `图片中有<span class="hl-hallucination">10-15栋</span>建筑（错误：大幅高估）`,
+        causalmm: `图片中可见<span class="hl-corrected">3-5栋</span>主要高楼建筑（准确计数）`,
       };
     }
+    // 默认城市街景回答
     return {
-      baseline: `图片显示<span class="hl-hallucination">两个人在公园里散步</span>（错误：场景和活动都错了）`,
-      causalmm: `图片显示<span class="hl-corrected">两个人在雨中撑伞</span>，背景是草地和车辆（准确）`,
+      baseline: `图片展示了<span class="hl-hallucination">港口景象</span>，有船只和水域（错误：混淆建筑与港口）`,
+      causalmm: `图片展示了<span class="hl-corrected">城市建筑群</span>，包括高楼大厦和现代城市元素（准确识别）`,
     };
   }
   
-  // Where questions (在哪里)
-  if (q.includes('在哪里') || q.includes('where') || q.includes('位置')) {
+  // ========== 场景2: 自然风景 ==========
+  if (scene === 'scene2') {
+    // 有没有动物
+    if (q.includes('有') && (q.includes('动物') || q.includes('狗') || q.includes('猫') || q.includes('鸟'))) {
+      return {
+        baseline: `<span class="hl-hallucination">是的</span>，图片中有<span class="hl-hallucination">奔跑的狗</span>在草地上（错误：混淆了树干或石头为动物）`,
+        causalmm: `<span class="hl-corrected">不，图片中没有可见的动物</span>。这是纯自然风景，展示山脉、树木和草地（准确识别）`,
+      };
+    }
+    // 有没有人
+    if (q.includes('有') && (q.includes('人') || q.includes('人物'))) {
+      return {
+        baseline: `<span class="hl-hallucination">是的</span>，有<span class="hl-hallucination">游客</span>在景点拍照（错误：在自然风景中误识别人物）`,
+        causalmm: `<span class="hl-corrected">不，图片中没有人物</span>。这是纯自然景观，没有人造元素（准确识别）`,
+      };
+    }
+    // 颜色问题
+    if (q.includes('颜色') || q.includes('什么颜色')) {
+      return {
+        baseline: `图片的主要颜色是<span class="hl-hallucination">红色和黄色</span>，像秋天的树林（错误：混淆季节）`,
+        causalmm: `图片的主要颜色是<span class="hl-corrected">绿色（树木草地）、蓝色（天空）、棕色（山体）</span>，典型的春夏自然景观（准确识别）`,
+      };
+    }
+    // 天气问题
+    if (q.includes('天气') || q.includes('weather')) {
+      return {
+        baseline: `天气是<span class="hl-hallucination">暴风雨来临前</span>，天空阴暗（错误：错误判断云层）`,
+        causalmm: `天气是<span class="hl-corrected">多云或晴朗</span>，天空有云但整体明亮（准确识别）`,
+      };
+    }
+    // 有没有水
+    if (q.includes('有') && (q.includes('水') || q.includes('湖') || q.includes('河'))) {
+      return {
+        baseline: `<span class="hl-hallucination">是的</span>，有<span class="hl-hallucination">湖泊</span>或河流（错误：在纯山林图中误识别水域）`,
+        causalmm: `<span class="hl-corrected">不，图片中没有明显的水体</span>。主要是山脉、树木和草地（准确识别）`,
+      };
+    }
+    // 场景问题
+    if (q.includes('场景') || q.includes('什么') && (q.includes('地方') || q.includes('哪里'))) {
+      return {
+        baseline: `这是<span class="hl-hallucination">热带雨林</span>（错误：完全错误的生态类型）`,
+        causalmm: `这是<span class="hl-corrected">温带山林/草原</span>自然景观（准确识别）`,
+      };
+    }
+    // 默认自然风景回答
     return {
-      baseline: `他们在<span class="hl-hallucination">海边</span>（错误：完全错误的地点）`,
-      causalmm: `他们在<span class="hl-corrected">户外人行道或公园小径</span>上，旁边是草地（准确）`,
+      baseline: `图片展示了<span class="hl-hallucination">沙漠景象</span>，有仙人掌和沙丘（错误：完全错误的自然类型）`,
+      causalmm: `图片展示了<span class="hl-corrected">山林草原</span>自然景观（准确识别）`,
     };
   }
   
-  // Default: try to answer the specific question
+  // ========== 场景3: 物体特写 ==========
+  if (scene === 'scene3') {
+    // 数量问题
+    if (q.includes('多少') || q.includes('几个')) {
+      return {
+        baseline: `图片中有<span class="hl-hallucination">3-4个</span>物体（错误：高估数量）`,
+        causalmm: `图片是<span class="hl-corrected">单一物体</span>的特写视图，只有一个主要物体（准确识别）`,
+      };
+    }
+    // 有没有人
+    if (q.includes('有') && (q.includes('人') || q.includes('人物'))) {
+      return {
+        baseline: `<span class="hl-hallucination">是的</span>，有<span class="hl-hallucination">人物</span>手持这个物体（错误：在物体特写中误识别人物）`,
+        causalmm: `<span class="hl-corrected">不，图片中没有人物</span>。这是物体特写，焦点在物体本身（准确识别）`,
+      };
+    }
+    // 颜色问题
+    if (q.includes('颜色') || q.includes('什么颜色')) {
+      return {
+        baseline: `物体的颜色是<span class="hl-hallucination">金色和银色</span>（错误：夸张的材质描述）`,
+        causalmm: `物体的颜色取决于<span class="hl-corrected">实际物体类型</span>（准确识别）`,
+      };
+    }
+    // 什么物体
+    if (q.includes('什么') && (q.includes('物体') || q.includes('东西') || q.includes('物品'))) {
+      return {
+        baseline: `这是一个<span class="hl-hallucination">高科技设备</span>，可能是无人机（错误：过度推断）`,
+        causalmm: `这是<span class="hl-corrected">日常物品</span>的特写视图（准确识别）`,
+      };
+    }
+    // 默认物体特写回答
+    return {
+      baseline: `图片展示了<span class="hl-hallucination">一盘食物</span>，看起来很美味（错误：错误的物体类别）`,
+      causalmm: `图片展示了<span class="hl-corrected">某个物体</span>的特写细节（准确识别）`,
+    };
+  }
+  
+  // ========== 场景4: 人物场景 ==========
+  if (scene === 'scene4') {
+    // 有没有船
+    if (q.includes('有') && (q.includes('船') || q.includes('boat'))) {
+      return {
+        baseline: `<span class="hl-hallucination">是的</span>，背景中有<span class="hl-hallucination">小船</span>在水上（错误：混淆背景元素）`,
+        causalmm: `<span class="hl-corrected">不，图片中没有船</span>。这是人物场景，背景是室内或室外环境（准确识别）`,
+      };
+    }
+    // 有没有车
+    if (q.includes('有') && (q.includes('车') || q.includes('汽车'))) {
+      return {
+        baseline: `<span class="hl-hallucination">是的</span>，旁边停着一辆<span class="hl-hallucination">红色汽车</span>（错误：添加不存在的元素）`,
+        causalmm: `<span class="hl-corrected">无法确定</span>。人物特写图中车辆细节不可见（准确识别）`,
+      };
+    }
+    // 颜色问题
+    if (q.includes('颜色') || q.includes('什么颜色')) {
+      return {
+        baseline: `图片的主要颜色是<span class="hl-hallucination">粉红色</span>和<span class="hl-hallucination">紫色</span>（错误：基于先验假设颜色）`,
+        causalmm: `图片的主要颜色取决于<span class="hl-corrected">实际场景配色</span>（准确识别）`,
+      };
+    }
+    // 人数问题
+    if (q.includes('多少') && q.includes('人')) {
+      return {
+        baseline: `图片中有<span class="hl-hallucination">3-4个人</span>（错误：高估人数）`,
+        causalmm: `图片中有<span class="hl-corrected">1-2个人</span>（准确计数）`,
+      };
+    }
+    // 天气问题
+    if (q.includes('天气') || q.includes('weather')) {
+      return {
+        baseline: `天气是<span class="hl-hallucination">下雪天</span>（错误：忽略场景实际特征）`,
+        causalmm: `根据<span class="hl-corrected">场景特征</span>判断天气（准确识别）`,
+      };
+    }
+    // 场景问题
+    if (q.includes('场景') || q.includes('什么') && (q.includes('地方') || q.includes('哪里'))) {
+      return {
+        baseline: `这是一个<span class="hl-hallucination">海滩</span>场景（错误：完全错误的场景）`,
+        causalmm: `这是一个<span class="hl-corrected">室内/室外人物场景</span>（准确识别）`,
+      };
+    }
+    // 默认人物场景回答
+    return {
+      baseline: `图片展示了<span class="hl-hallucination">户外运动场景</span>，人物在跑步（错误：错误推断活动）`,
+      causalmm: `图片展示了<span class="hl-corrected">人物场景</span>（准确识别）`,
+    };
+  }
+  
+  // ========== 默认fallback ==========
   return {
-    baseline: `<span class="hl-hallucination">图片中有两个人站在公园里</span>（答非所问，给出通用描述）`,
-    causalmm: `<span class="hl-corrected">根据您的问题，图片显示的是两个人在雨中撑伞的场景</span>（尝试回答问题）`,
+    baseline: `<span class="hl-hallucination">无法准确识别</span>，给出错误描述`,
+    causalmm: `<span class="hl-corrected">基于实际视觉内容</span>给出准确描述`,
   };
+}
+
+// ── Scene-specific quick questions ──
+const sceneQuestions = {
+  scene1: ['图片中有船吗？', '有多少栋建筑？', '天气怎么样？', '主要颜色是什么？', '这是什么场景？'],
+  scene2: ['图片中有动物吗？', '天气怎么样？', '主要颜色是什么？', '有没有水/河流？', '这是什么场景？'],
+  scene3: ['图片中有几个人？', '有多少个物体？', '主要颜色是什么？', '是什么物体？', '物体是什么材质？'],
+  scene4: ['图片中有船吗？', '有多少人？', '天气怎么样？', '这是什么场景？', '他们在做什么？'],
+};
+
+function updateQuickQuestions(scene) {
+  const questions = sceneQuestions[scene] || sceneQuestions.scene1;
+  const container = document.getElementById('quickQuestions');
+  const hint = document.getElementById('sceneHint');
+  const content = sceneContent[scene] || sceneContent.scene1;
+  
+  hint.textContent = `（当前：${content.name}）`;
+  
+  container.innerHTML = questions.map((q, i) => `
+    <button onclick="setQuestion('${q}')" class="q-btn" style="padding:6px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:99px;font-size:.75rem;cursor:pointer;color:var(--text2);transition:all .2s" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">${q.replace('图片中', '').replace('这张图片的', '').substring(0, 8)}...</button>
+  `).join('');
+  
+  // Set default question
+  document.getElementById('questionInput').value = questions[0];
 }
 
 function selectSample(el) {
@@ -333,6 +491,10 @@ function selectSample(el) {
   el.classList.add('selected');
   const scene = el.dataset.scene;
   document.getElementById('previewImg').src = sceneImgMap[scene];
+  
+  // Update quick questions based on scene
+  updateQuickQuestions(scene);
+  
   // Clear previous results when switching samples
   document.getElementById('outputCompare').style.display = 'none';
   document.getElementById('attnVis').style.display = 'none';
@@ -466,6 +628,9 @@ zone.addEventListener('drop', e => {
     document.querySelectorAll('.sample-img').forEach(s => s.classList.remove('selected'));
   }
 });
+
+// Initialize quick questions on page load
+updateQuickQuestions('scene1');
 </script>
 </body>
 </html>
