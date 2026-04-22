@@ -7,6 +7,20 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<style>
+.upload-warning {
+  background: #fef3cd;
+  border: 1px solid #ffc107;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-top: 12px;
+  font-size: 0.82rem;
+  color: #856404;
+  display: none;
+}
+.upload-warning.show { display: block; }
+.upload-warning strong { font-weight: 600; }
+</style>
 </head>
 <body>
 
@@ -26,7 +40,7 @@
   <div class="hero-content">
     <div class="hero-badge">Live Demo</div>
     <h1 class="hero-title">体验 CausalMM</h1>
-    <p class="hero-subtitle">选择示例图片或上传图片，体验反事实推理的幻觉抑制效果</p>
+    <p class="hero-subtitle">选择示例图片，体验反事实推理的幻觉抑制效果</p>
   </div>
 </section>
 
@@ -57,16 +71,6 @@
         </div>
 
         <div style="margin-top:20px">
-          <h3 style="font-size:1rem;margin-bottom:12px">或上传图片</h3>
-          <label class="upload-zone" id="uploadZone">
-            <div class="upload-icon">📁</div>
-            <h3>点击上传图片</h3>
-            <p>支持 JPG / PNG，最大 10MB</p>
-            <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="handleFile(this)">
-          </label>
-        </div>
-
-        <div style="margin-top:20px">
           <h3 style="font-size:1rem;margin-bottom:12px">输入问题 <span id="sceneHint" style="font-size:.75rem;color:var(--text3);font-weight:400"></span></h3>
           <div id="quickQuestions" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px">
             <button onclick="setQuestion('图片中有船吗？')" class="q-btn" style="padding:6px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:99px;font-size:.75rem;cursor:pointer;color:var(--text2);transition:all .2s" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">有船吗？</button>
@@ -81,6 +85,11 @@
             font-family:var(--font);font-size:.88rem;color:var(--text);
             resize:vertical;min-height:80px;outline:none;transition:border-color .2s
           " onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'">图片中有船吗？</textarea>
+        </div>
+
+        <div id="uploadWarning" class="upload-warning">
+          <strong>⚠️ 注意：</strong>上传自定义图片后，系统将使用预设示例场景进行演示。
+          真实的 CausalMM 推理需要在 GPU 服务器上运行。
         </div>
 
         <button onclick="runDemo()" style="
@@ -173,13 +182,14 @@
           <div class="section-tag">运行原理</div>
           <h3>前端模拟推理说明</h3>
           <p style="font-size:.85rem;color:var(--text2);margin-bottom:12px">
-            本演示模拟 CausalMM 的因果推理过程。<strong>不同图片 + 不同问题 → 不同答案</strong>。
-            基线模型会基于先验产生幻觉，CausalMM 通过反事实推理准确回答。真实模型推理需要 GPU 服务器。
+            本演示基于 <strong>预设示例图片</strong> 模拟 CausalMM 的因果推理过程。
+            不同示例图片针对不同问题类型有不同的预设答案。<br><br>
+            <strong>真实模型推理</strong>需要 GPU 服务器，本 demo 仅供概念展示。
           </p>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <span style="padding:4px 12px;background:var(--primary-bg);color:var(--primary);border-radius:99px;font-size:.78rem;font-weight:600">基于 LLaVA-1.5</span>
             <span style="padding:4px 12px;background:var(--accent-bg);color:var(--accent);border-radius:99px;font-size:.78rem;font-weight:600">γ=1.0, ε=0.6</span>
-            <span style="padding:4px 12px;background:var(--bg3);color:var(--text2);border-radius:99px;font-size:.78rem;font-weight:600">图片+问题驱动</span>
+            <span style="padding:4px 12px;background:var(--bg3);color:var(--text2);border-radius:99px;font-size:.78rem;font-weight:600">示例图片演示</span>
           </div>
         </div>
 
@@ -221,6 +231,10 @@ const sceneImgMap = {
   scene4: 'https://picsum.photos/seed/people/400/400',
 };
 
+// ── Current state ──
+let currentScene = 'scene1';
+let isCustomUpload = false;
+
 // ── Scene-specific content definitions ──
 const sceneContent = {
   scene1: {
@@ -228,54 +242,79 @@ const sceneContent = {
     description: '展示现代城市建筑群，包括高楼大厦、玻璃幕墙、街道设施，背景有天空和可能的城市交通工具',
     objects: ['建筑', '高楼', '窗户', '街道', '天空'],
     colors: ['灰色', '蓝色', '白色', '玻璃反光'],
-    // 常见幻觉：把建筑误认为其他物体
   },
   scene2: {
     name: '自然风景',
     description: '展示山脉、森林、草原、湖泊等自然景观，包含天空、云朵、树木和草地',
     objects: ['山脉', '树木', '草地', '天空', '云朵'],
     colors: ['绿色', '蓝色', '棕色', '白色'],
-    // 常见幻觉：混淆季节或天气
   },
   scene3: {
     name: '物体特写',
     description: '某个物体或物品的特写视图，可能是食物、家具、电子产品或其他日常物品',
     objects: ['物体主体', '表面纹理', '背景'],
     colors: ['主体色', '背景色', '光泽'],
-    // 常见幻觉：高估数量或添加不存在细节
   },
   scene4: {
     name: '人物场景',
     description: '包含人物的场景，可能是室内或室外，人物可能在进行某种活动或静止',
     objects: ['人物', '背景环境', '可能的道具'],
     colors: ['肤色', '衣物色', '背景色'],
-    // 常见幻觉：错误判断人数或活动
   }
 };
 
-// ── Dynamic answer generation based on BOTH question type AND scene ──
+// ── Common object check: does this object match the scene? ──
+const objectSceneMatch = {
+  // 船 → 水边/户外场景
+  '船': ['scene1', 'scene4'],
+  'boat': ['scene1', 'scene4'],
+  '西瓜': ['scene3'],  // 西瓜是食物/物体特写
+  'watermelon': ['scene3'],
+  '汽车': ['scene1', 'scene4'],
+  '车': ['scene1', 'scene4'],
+  '动物': ['scene2', 'scene4'],
+  '狗': ['scene2', 'scene4'],
+  '猫': ['scene2', 'scene4'],
+  '鸟': ['scene2'],
+  '人': ['scene4'],
+  '人物': ['scene4'],
+  '人': ['scene4'],
+};
+
+// ── Smart answer generation based on scene + question ──
 function generateAnswer(question, scene) {
   const q = question.toLowerCase();
   const content = sceneContent[scene] || sceneContent.scene1;
-  
-  // ========== 场景1: 城市街景 ==========
+
+  // Check if question is asking about presence of something
+  const hasMatch = q.match(/有没有|有(.*?)吗|有(.*?)\?|有(.*?)吗\?|是否|是否.*有/);
+  const objectMatch = q.match(/(?:船|西瓜|汽车|动物|狗|猫|鸟|车辆|人物|人|树木|建筑|水|湖|河)/g);
+
+  // ========== SCENE 1: 城市街景 ==========
   if (scene === 'scene1') {
     // 有没有船
-    if (q.includes('有') && (q.includes('船') || q.includes('boat'))) {
+    if (q.includes('船') || q.includes('boat')) {
       return {
         baseline: `<span class="hl-hallucination">是的</span>，图片中可以看到<span class="hl-hallucination">河面上的船只</span>（错误：混淆了建筑窗户和高楼轮廓）`,
         causalmm: `<span class="hl-corrected">不，图片中没有船</span>。这是城市建筑群，灰色的高楼和玻璃幕墙是建筑特征，不是船只（准确识别）`,
       };
     }
+    // 有没有西瓜
+    if (q.includes('西瓜') || q.includes('watermelon')) {
+      return {
+        baseline: `<span class="hl-hallucination">是的</span>，图片远处可能有<span class="hl-hallucination">卖西瓜的摊位</span>（错误：过度推断）`,
+        causalmm: `<span class="hl-corrected">不，图片中没有西瓜</span>。这是城市建筑场景，不适合摆放食物摊位（准确识别）`,
+      };
+    }
     // 有没有人
-    if (q.includes('有') && (q.includes('人') || q.includes('人物'))) {
+    if (q.includes('人') && !q.includes('汽车') && !q.includes('车')) {
       return {
         baseline: `<span class="hl-hallucination">是的</span>，可以看到<span class="hl-hallucination">街道上行走的行人</span>（错误：图片是远景建筑，行人难以辨认）`,
         causalmm: `<span class="hl-corrected">无法确定</span>。图片是城市建筑远景，人物细节不可见，不应随意假设（准确识别）`,
       };
     }
-    // 有没有车
-    if (q.includes('有') && (q.includes('车') || q.includes('汽车'))) {
+    // 有没有车/汽车
+    if (q.includes('车') || q.includes('汽车')) {
       return {
         baseline: `<span class="hl-hallucination">是的</span>，街道上有<span class="hl-hallucination">很多汽车</span>在行驶（错误：图片没有显示街道交通）`,
         causalmm: `<span class="hl-corrected">无法确定</span>。图片主要展示建筑立面，街道车辆细节不可见（准确识别）`,
@@ -296,7 +335,7 @@ function generateAnswer(question, scene) {
       };
     }
     // 场景问题
-    if (q.includes('场景') || q.includes('什么') && (q.includes('地方') || q.includes('哪里'))) {
+    if (q.includes('场景') || q.includes('什么') && (q.includes('地方') || q.includes('哪里') || q.includes('场景'))) {
       return {
         baseline: `这是<span class="hl-hallucination">海边风景</span>（错误：完全识别错误）`,
         causalmm: `这是<span class="hl-corrected">城市建筑群</span>，展示高楼大厦和城市天际线（准确识别）`,
@@ -309,24 +348,45 @@ function generateAnswer(question, scene) {
         causalmm: `图片中可见<span class="hl-corrected">3-5栋</span>主要高楼建筑（准确计数）`,
       };
     }
+    // 有没有动物
+    if (q.includes('动物')) {
+      return {
+        baseline: `<span class="hl-hallucination">远处可能有</span>宠物狗（错误：城市建筑场景不应假设有动物）`,
+        causalmm: `<span class="hl-corrected">不，图片中没有可见的动物</span>。城市建筑场景中一般没有野生动物（准确识别）`,
+      };
+    }
     // 默认城市街景回答
     return {
       baseline: `图片展示了<span class="hl-hallucination">港口景象</span>，有船只和水域（错误：混淆建筑与港口）`,
       causalmm: `图片展示了<span class="hl-corrected">城市建筑群</span>，包括高楼大厦和现代城市元素（准确识别）`,
     };
   }
-  
-  // ========== 场景2: 自然风景 ==========
+
+  // ========== SCENE 2: 自然风景 ==========
   if (scene === 'scene2') {
+    // 有没有船
+    if (q.includes('船') || q.includes('boat')) {
+      return {
+        baseline: `<span class="hl-hallucination">远处有小船</span>在湖上（错误：自然山林中不应有船）`,
+        causalmm: `<span class="hl-corrected">不，图片中没有船</span>。这是山林草原自然景观，没有水域和船只（准确识别）`,
+      };
+    }
+    // 有没有西瓜
+    if (q.includes('西瓜') || q.includes('watermelon')) {
+      return {
+        baseline: `<span class="hl-hallucination">草地上可能有野餐的西瓜</span>（错误：过度推断）`,
+        causalmm: `<span class="hl-corrected">不，图片中没有西瓜</span>。这是纯自然风景，没有人造食物（准确识别）`,
+      };
+    }
     // 有没有动物
-    if (q.includes('有') && (q.includes('动物') || q.includes('狗') || q.includes('猫') || q.includes('鸟'))) {
+    if (q.includes('动物') || q.includes('狗') || q.includes('猫') || q.includes('鸟')) {
       return {
         baseline: `<span class="hl-hallucination">是的</span>，图片中有<span class="hl-hallucination">奔跑的狗</span>在草地上（错误：混淆了树干或石头为动物）`,
         causalmm: `<span class="hl-corrected">不，图片中没有可见的动物</span>。这是纯自然风景，展示山脉、树木和草地（准确识别）`,
       };
     }
     // 有没有人
-    if (q.includes('有') && (q.includes('人') || q.includes('人物'))) {
+    if (q.includes('人') && !q.includes('汽车') && !q.includes('车')) {
       return {
         baseline: `<span class="hl-hallucination">是的</span>，有<span class="hl-hallucination">游客</span>在景点拍照（错误：在自然风景中误识别人物）`,
         causalmm: `<span class="hl-corrected">不，图片中没有人物</span>。这是纯自然景观，没有人造元素（准确识别）`,
@@ -347,7 +407,7 @@ function generateAnswer(question, scene) {
       };
     }
     // 有没有水
-    if (q.includes('有') && (q.includes('水') || q.includes('湖') || q.includes('河'))) {
+    if (q.includes('水') || q.includes('湖') || q.includes('河')) {
       return {
         baseline: `<span class="hl-hallucination">是的</span>，有<span class="hl-hallucination">湖泊</span>或河流（错误：在纯山林图中误识别水域）`,
         causalmm: `<span class="hl-corrected">不，图片中没有明显的水体</span>。主要是山脉、树木和草地（准确识别）`,
@@ -366,9 +426,30 @@ function generateAnswer(question, scene) {
       causalmm: `图片展示了<span class="hl-corrected">山林草原</span>自然景观（准确识别）`,
     };
   }
-  
-  // ========== 场景3: 物体特写 ==========
+
+  // ========== SCENE 3: 物体特写 ==========
   if (scene === 'scene3') {
+    // 有没有船
+    if (q.includes('船') || q.includes('boat')) {
+      return {
+        baseline: `<span class="hl-hallucination">特写镜头中可能有船模</span>（错误：在物体特写中凭空添加）`,
+        causalmm: `<span class="hl-corrected">不，图片中没有船</span>。物体特写场景中不会包含船只（准确识别）`,
+      };
+    }
+    // 有没有西瓜
+    if (q.includes('西瓜') || q.includes('watermelon')) {
+      return {
+        baseline: `<span class="hl-hallucination">这可能是一个西瓜的特写</span>（错误：如果不是西瓜就是完全错误）`,
+        causalmm: `<span class="hl-corrected">无法确定</span>。物体特写图片需要具体分析物体类型，不能随意假设（准确识别）`,
+      };
+    }
+    // 有没有车
+    if (q.includes('车') || q.includes('汽车')) {
+      return {
+        baseline: `<span class="hl-hallucination">可能是汽车零件的特写</span>（错误：物体特写不一定与车有关）`,
+        causalmm: `<span class="hl-corrected">不，物体特写场景中一般不会有汽车</span>。特写通常聚焦日常物品（准确识别）`,
+      };
+    }
     // 数量问题
     if (q.includes('多少') || q.includes('几个')) {
       return {
@@ -377,10 +458,17 @@ function generateAnswer(question, scene) {
       };
     }
     // 有没有人
-    if (q.includes('有') && (q.includes('人') || q.includes('人物'))) {
+    if (q.includes('人') || q.includes('人物')) {
       return {
         baseline: `<span class="hl-hallucination">是的</span>，有<span class="hl-hallucination">人物</span>手持这个物体（错误：在物体特写中误识别人物）`,
         causalmm: `<span class="hl-corrected">不，图片中没有人物</span>。这是物体特写，焦点在物体本身（准确识别）`,
+      };
+    }
+    // 有没有动物
+    if (q.includes('动物') || q.includes('狗') || q.includes('猫')) {
+      return {
+        baseline: `<span class="hl-hallucination">可能是宠物用品的特写</span>（错误：随意关联）`,
+        causalmm: `<span class="hl-corrected">不，物体特写场景中一般不会有动物</span>（准确识别）`,
       };
     }
     // 颜色问题
@@ -403,21 +491,35 @@ function generateAnswer(question, scene) {
       causalmm: `图片展示了<span class="hl-corrected">某个物体</span>的特写细节（准确识别）`,
     };
   }
-  
-  // ========== 场景4: 人物场景 ==========
+
+  // ========== SCENE 4: 人物场景 ==========
   if (scene === 'scene4') {
     // 有没有船
-    if (q.includes('有') && (q.includes('船') || q.includes('boat'))) {
+    if (q.includes('船') || q.includes('boat')) {
       return {
         baseline: `<span class="hl-hallucination">是的</span>，背景中有<span class="hl-hallucination">小船</span>在水上（错误：混淆背景元素）`,
         causalmm: `<span class="hl-corrected">不，图片中没有船</span>。这是人物场景，背景是室内或室外环境（准确识别）`,
       };
     }
+    // 有没有西瓜
+    if (q.includes('西瓜') || q.includes('watermelon')) {
+      return {
+        baseline: `<span class="hl-hallucination">桌上可能有切好的西瓜</span>（错误：过度推断）`,
+        causalmm: `<span class="hl-corrected">无法确定</span>。人物场景中可能有食物，但不是必须有的元素（准确识别）`,
+      };
+    }
     // 有没有车
-    if (q.includes('有') && (q.includes('车') || q.includes('汽车'))) {
+    if (q.includes('车') || q.includes('汽车')) {
       return {
         baseline: `<span class="hl-hallucination">是的</span>，旁边停着一辆<span class="hl-hallucination">红色汽车</span>（错误：添加不存在的元素）`,
         causalmm: `<span class="hl-corrected">无法确定</span>。人物特写图中车辆细节不可见（准确识别）`,
+      };
+    }
+    // 有没有动物
+    if (q.includes('动物') || q.includes('狗') || q.includes('猫')) {
+      return {
+        baseline: `<span class="hl-hallucination">可能有一只宠物狗</span>在人物旁边（错误：随意添加）`,
+        causalmm: `<span class="hl-corrected">无法确定</span>。图片中如有宠物需要具体分析（准确识别）`,
       };
     }
     // 颜色问题
@@ -454,7 +556,7 @@ function generateAnswer(question, scene) {
       causalmm: `图片展示了<span class="hl-corrected">人物场景</span>（准确识别）`,
     };
   }
-  
+
   // ========== 默认fallback ==========
   return {
     baseline: `<span class="hl-hallucination">无法准确识别</span>，给出错误描述`,
@@ -475,13 +577,13 @@ function updateQuickQuestions(scene) {
   const container = document.getElementById('quickQuestions');
   const hint = document.getElementById('sceneHint');
   const content = sceneContent[scene] || sceneContent.scene1;
-  
+
   hint.textContent = `（当前：${content.name}）`;
-  
+
   container.innerHTML = questions.map((q, i) => `
     <button onclick="setQuestion('${q}')" class="q-btn" style="padding:6px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:99px;font-size:.75rem;cursor:pointer;color:var(--text2);transition:all .2s" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">${q.replace('图片中', '').replace('这张图片的', '').substring(0, 8)}...</button>
   `).join('');
-  
+
   // Set default question
   document.getElementById('questionInput').value = questions[0];
 }
@@ -490,11 +592,17 @@ function selectSample(el) {
   document.querySelectorAll('.sample-img').forEach(s => s.classList.remove('selected'));
   el.classList.add('selected');
   const scene = el.dataset.scene;
+  currentScene = scene;
+  isCustomUpload = false;
+
   document.getElementById('previewImg').src = sceneImgMap[scene];
-  
+
   // Update quick questions based on scene
   updateQuickQuestions(scene);
-  
+
+  // Hide upload warning when selecting samples
+  document.getElementById('uploadWarning').classList.remove('show');
+
   // Clear previous results when switching samples
   document.getElementById('outputCompare').style.display = 'none';
   document.getElementById('attnVis').style.display = 'none';
@@ -513,10 +621,14 @@ function setQuestion(q) {
 function handleFile(input) {
   const file = input.files[0];
   if (!file) return;
+
   const reader = new FileReader();
   reader.onload = function(e) {
     document.getElementById('previewImg').src = e.target.result;
     document.querySelectorAll('.sample-img').forEach(s => s.classList.remove('selected'));
+    // Show warning about custom upload
+    document.getElementById('uploadWarning').classList.add('show');
+    isCustomUpload = true;
   };
   reader.readAsDataURL(file);
 }
@@ -544,13 +656,13 @@ function runDemo() {
   badge.style.background = 'var(--primary-bg)';
   badge.style.color = 'var(--primary)';
 
-  // Get scene
+  // Get scene - use current scene, but warn if custom upload
   const selected = document.querySelector('.sample-img.selected');
-  const scene = selected ? selected.dataset.scene : 'custom';
-  
+  const scene = currentScene;
+
   // Generate dynamic answers based on question
   const answers = generateAnswer(question, scene);
-  
+
   // Show initial loading state
   document.getElementById('baselineOutput').innerHTML = `正在分析问题「${question}」...`;
   document.getElementById('causalmmOutput').innerHTML = `正在通过因果推理分析...`;
@@ -626,6 +738,8 @@ zone.addEventListener('drop', e => {
     reader.onload = ev => document.getElementById('previewImg').src = ev.target.result;
     reader.readAsDataURL(f);
     document.querySelectorAll('.sample-img').forEach(s => s.classList.remove('selected'));
+    document.getElementById('uploadWarning').classList.add('show');
+    isCustomUpload = true;
   }
 });
 
